@@ -103,6 +103,7 @@ button.primario { background: var(--lime); }
 button[disabled] { opacity: .6; cursor: default; }
 :focus-visible { outline: 4px solid var(--bianco); outline-offset: 3px; }
 input[type="file"]:focus-visible::file-selector-button { outline: 0; }
+.scatta { margin-top: 12px; }
 .azioni { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
 .spunta { display: flex; align-items: center; gap: 10px; margin: 14px 0 0; font-size: 15px; cursor: pointer; }
 .spunta input { width: 24px; height: 24px; margin: 0; accent-color: var(--lime); }
@@ -241,6 +242,8 @@ legend { display: block; margin-bottom: 6px; padding: 0; font-family: "Archivo-B
         <label for="foto">Foto del banco (facoltative)</label>
         <p class="aiuto" id="aiuto-foto">Formato consigliato: orizzontale 4:3. La prima va in copertina, ogni altra ha una slide sua. Le foto non vengono mai tagliate.</p>
         <input type="file" id="foto" accept="image/*" multiple aria-describedby="aiuto-foto">
+        <button type="button" class="scatta" id="scatta-foto">Scatta una foto</button>
+        <input type="file" id="foto-camera" accept="image/*" capture="environment" hidden>
         <ol class="lista-foto" id="lista-foto" aria-label="Foto scelte, in ordine di slide"></ol>
       </div>
 
@@ -290,8 +293,10 @@ legend { display: block; margin-bottom: 6px; padding: 0; font-family: "Archivo-B
       <fieldset id="p-post" role="tabpanel" aria-labelledby="tab-post">
         <div class="campo">
           <label for="post-foto">Foto del banco (facoltativa)</label>
-          <p class="aiuto" id="aiuto-foto">Riempie il riquadro della storia: i bordi della foto possono essere tagliati.</p>
-          <input type="file" id="post-foto" accept="image/*" aria-describedby="aiuto-foto">
+          <p class="aiuto" id="aiuto-foto-post">Riempie il riquadro della storia: i bordi della foto possono essere tagliati.</p>
+          <input type="file" id="post-foto" accept="image/*" aria-describedby="aiuto-foto-post">
+          <button type="button" class="scatta" id="post-scatta">Scatta una foto</button>
+          <input type="file" id="post-foto-camera" accept="image/*" capture="environment" hidden>
         </div>
         <div class="campo">
           <label for="post-titolo">Etichetta in alto</label>
@@ -876,7 +881,10 @@ legend { display: block; margin-bottom: 6px; padding: 0; font-family: "Archivo-B
     el('t-sub').value = g[1];
     pianifica();
   });
-  el('post-foto').addEventListener('change', function () {
+  el('post-scatta').addEventListener('click', function () { el('post-foto-camera').click(); });
+  el('post-foto-camera').addEventListener('change', caricaFotoPost);
+  el('post-foto').addEventListener('change', caricaFotoPost);
+  function caricaFotoPost() {
     var file = this.files && this.files[0];
     if (!file) { return; }
     var url = URL.createObjectURL(file);
@@ -892,7 +900,7 @@ legend { display: block; margin-bottom: 6px; padding: 0; font-family: "Archivo-B
       esito.textContent = 'Non riesco a leggere la foto: prova con un file JPG o PNG.';
     };
     img.src = url;
-  });
+  }
   el('zone').addEventListener('change', aggiorna);
   el('s-modulo').addEventListener('submit', function (e) { e.preventDefault(); });
   el('s-esempio').addEventListener('click', function () {
@@ -1792,6 +1800,14 @@ legend { display: block; margin-bottom: 6px; padding: 0; font-family: "Archivo-B
   campoFoto.addEventListener('change', function () {
     var scelti = campoFoto.files ? Array.from(campoFoto.files) : [];
     campoFoto.value = '';
+    if (scelti.length) { aggiungiFoto(scelti); }
+  });
+  /* Fotocamera del telefono: ogni scatto si aggiunge in fondo alla lista */
+  var campoCamera = el('foto-camera');
+  el('scatta-foto').addEventListener('click', function () { campoCamera.click(); });
+  campoCamera.addEventListener('change', function () {
+    var scelti = campoCamera.files ? Array.from(campoCamera.files) : [];
+    campoCamera.value = '';
     if (scelti.length) { aggiungiFoto(scelti); }
   });
   listaFoto.addEventListener('click', suListaFoto);
